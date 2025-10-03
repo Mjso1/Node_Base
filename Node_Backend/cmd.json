@@ -1,0 +1,6 @@
+{
+    "1": "npm install",
+    "2": "npm install express mongoose dotenv cors helmet morgan",
+    "3": "npm install --save-dev nodemon",
+    "4": "npm install bcryptjs jsonwebtoken"
+}

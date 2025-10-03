@@ -1,0 +1,176 @@
+/* 한글 폰트 최적화 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+/* 기본 한글 폰트 설정 */
+html {
+  font-family: 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif;
+}
+
+/* Dashboard 스타일 */
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.dashboard-header {
+  background: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 500;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+}
+
+.dashboard-content {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-card, .dashboard-actions {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-card h2, .dashboard-actions h2 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.user-card p {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.action-button {
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+/* Home 페이지 스타일 */
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.home-header h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.home-header p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  word-break: keep-all;
+  line-height: 1.6;
+}
+
+.auth-section h2, .dashboard-section h2 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.auth-section p, .dashboard-section p {
+  margin-bottom: 1.5rem;
+  word-break: keep-all;
+}
+
+.auth-buttons, .dashboard-section {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-button, .dashboard-button {
+  padding: 0.75rem 2rem;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.auth-button:hover, .dashboard-button:hover {
+  background: white;
+  color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .home-header h1 {
+    font-size: 2rem;
+  }
+  
+  .home-header p {
+    font-size: 1rem;
+  }
+}
