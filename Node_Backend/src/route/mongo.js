@@ -157,4 +157,217 @@ router.put('/collections/:name/data/:id', async (req, res) => {
   }
 });
 
+// 새 문서 추가 API
+router.post('/collections/:name/data', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const newData = req.body;
+
+    const collection = mongoose.connection.db.collection(collectionName);
+    const result = await collection.insertOne(newData);
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      message: '문서가 성공적으로 추가되었습니다',
+      insertedId: result.insertedId,
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('문서 추가 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '문서 추가 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
+// 문서 삭제 API
+router.delete('/collections/:name/data/:id', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const documentId = req.params.id;
+
+    const collection = mongoose.connection.db.collection(collectionName);
+    const result = await collection.deleteOne({
+      _id: new mongoose.Types.ObjectId(documentId)
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: '삭제할 문서를 찾을 수 없습니다'
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      message: '문서가 성공적으로 삭제되었습니다',
+      deletedCount: result.deletedCount,
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('문서 삭제 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '문서 삭제 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
+// 문서 검색 API
+router.get('/collections/:name/search', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const searchQuery = req.query.q || '';
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = parseInt(req.query.skip) || 0;
+
+    const collection = mongoose.connection.db.collection(collectionName);
+    
+    // 텍스트 검색 쿼리 생성
+    let query = {};
+    if (searchQuery) {
+      // 모든 문자열 필드에서 검색
+      query = {
+        $or: [
+          { $text: { $search: searchQuery } },
+          // 텍스트 인덱스가 없는 경우를 위한 fallback
+          ...Object.keys(await collection.findOne() || {}).map(key => ({
+            [key]: { $regex: searchQuery, $options: 'i' }
+          }))
+        ]
+      };
+    }
+
+    const documents = await collection.find(query)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    const totalCount = await collection.countDocuments(query);
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      collection: collectionName,
+      searchQuery: searchQuery,
+      data: documents,
+      pagination: {
+        skip: skip,
+        limit: limit,
+        total: totalCount,
+        returned: documents.length
+      },
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('검색 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '검색 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
+// 컬렉션 스키마 정보 조회 API
+router.get('/collections/:name/schema', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const collection = mongoose.connection.db.collection(collectionName);
+    
+    // 샘플 문서들로 스키마 추정
+    const sampleDocs = await collection.find({}).limit(100).toArray();
+    
+    const schema = {};
+    sampleDocs.forEach(doc => {
+      Object.keys(doc).forEach(key => {
+        if (!schema[key]) {
+          schema[key] = {
+            type: typeof doc[key],
+            examples: [],
+            nullable: false
+          };
+        }
+        
+        if (schema[key].examples.length < 3 && 
+            !schema[key].examples.includes(doc[key])) {
+          schema[key].examples.push(doc[key]);
+        }
+        
+        if (doc[key] === null) {
+          schema[key].nullable = true;
+        }
+      });
+    });
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      collection: collectionName,
+      schema: schema,
+      sampleCount: sampleDocs.length,
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('스키마 조회 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '스키마 조회 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
+// 대량 업데이트 API
+router.patch('/collections/:name/bulk-update', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const { filter, update } = req.body;
+
+    const collection = mongoose.connection.db.collection(collectionName);
+    const result = await collection.updateMany(filter, { $set: update });
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      message: '대량 업데이트가 완료되었습니다',
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('대량 업데이트 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '대량 업데이트 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
 module.exports = router;
