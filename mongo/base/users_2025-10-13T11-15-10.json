@@ -1,0 +1,82 @@
+[
+  {
+    "_id": "68ecd4b3586cd9f851c8aef4",
+    "userId": "U1001",
+    "name": "ㅈㅈㅈ",
+    "email": "minjun.kim@example.com",
+    "birthDate": "1992-03-21",
+    "gender": "male",
+    "isActive": false,
+    "preferences": {
+      "language": "ko",
+      "theme": "light"
+    }
+  },
+  {
+    "_id": "68ecd53f586cd9f851c8aefb",
+    "userId": "U1002",
+    "username": "이서연",
+    "email": "seoyeon.lee@example.com",
+    "birthDate": "1988-07-12",
+    "gender": "female",
+    "membership": "premium",
+    "joinedDate": "2023-11-01",
+    "isActive": true,
+    "preferences": {
+      "language": "en",
+      "theme": "dark",
+      "notifications": true
+    }
+  },
+  {
+    "_id": "68ecd566586cd9f851c8aefd",
+    "userId": "U1003",
+    "username": "박지훈",
+    "email": "jihun.park@student.edu",
+    "birthDate": "2005-09-05",
+    "gender": "male",
+    "role": "student",
+    "school": "서울고등학교",
+    "grade": 11,
+    "isActive": true,
+    "preferences": {
+      "language": "ko",
+      "theme": "light"
+    }
+  },
+  {
+    "_id": "68ecd573586cd9f851c8af00",
+    "userId": "U1004",
+    "username": "최윤아",
+    "email": "yuna.choi@devhub.io",
+    "birthDate": "1995-01-30",
+    "gender": "female",
+    "role": "developer",
+    "skills": [
+      "JavaScript",
+      "React",
+      "Node.js"
+    ],
+    "isActive": true,
+    "preferences": {
+      "language": "en",
+      "theme": "dark",
+      "codeEditor": "VSCode"
+    }
+  },
+  {
+    "_id": "68ecd598586cd9f851c8af04",
+    "userId": "U1005",
+    "username": "정영수",
+    "email": "youngsoo.jung@example.com",
+    "birthDate": "1955-11-18",
+    "gender": "male",
+    "role": "senior",
+    "isActive": true,
+    "preferences": {
+      "language": "ko",
+      "theme": "highContrast",
+      "fontSize": "large"
+    }
+  }
+]
