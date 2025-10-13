@@ -113,4 +113,48 @@ router.get('/collections/:name/data', async (req, res) => {
   }
 });
 
+// 특정 문서 업데이트 API
+router.put('/collections/:name/data/:id', async (req, res) => {
+  try {
+    const collectionName = req.params.name;
+    const documentId = req.params.id;
+    const updateData = req.body;
+
+    // _id 필드 제거 (업데이트할 수 없음)
+    delete updateData._id;
+
+    const collection = mongoose.connection.db.collection(collectionName);
+    const result = await collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(documentId) },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: '문서를 찾을 수 없습니다'
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify({
+      success: true,
+      message: '문서가 성공적으로 업데이트되었습니다',
+      modifiedCount: result.modifiedCount,
+      timestamp: new Date().toLocaleString('ko-KR')
+    }, null, 2));
+
+  } catch (error) {
+    console.error('문서 업데이트 오류:', error);
+    const errorResult = {
+      success: false,
+      message: '문서 업데이트 중 오류가 발생했습니다',
+      error: error.message
+    };
+    
+    res.status(500).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(JSON.stringify(errorResult, null, 2));
+  }
+});
+
 module.exports = router;

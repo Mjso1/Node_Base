@@ -25,7 +25,9 @@ import {
   TableRow,
   TablePagination,
   IconButton,
-  Collapse
+  Collapse,
+  TextField,    // 👈 추가
+  Fab          // 👈 추가
 } from '@mui/material';
 import {
   Storage as StorageIcon,
@@ -36,7 +38,9 @@ import {
   Numbers as NumbersIcon,
   Close as CloseIcon,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon
+  ExpandLess as ExpandLessIcon,
+  Edit as EditIcon,     // 👈 추가
+  Save as SaveIcon      // 👈 추가
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -65,6 +69,13 @@ const MongoDBViewer = () => {
   
   // JSON 확장/축소 상태
   const [expandedRows, setExpandedRows] = useState({});
+
+  // 수정 다이얼로그 상태
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingDocument, setEditingDocument] = useState(null);
+  const [editedData, setEditedData] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState(null);
 
   // 컬렉션 리스트 조회
   const fetchCollections = async () => {
@@ -214,6 +225,54 @@ const MongoDBViewer = () => {
       );
     }
     return String(value);
+  };
+
+  // 수정 버튼 클릭
+  const handleEditDocument = (document) => {
+    setEditingDocument(document);
+    setEditedData(JSON.parse(JSON.stringify(document))); // 깊은 복사
+    setEditDialog(true);
+    setEditError(null);
+  };
+
+  // 수정된 데이터 변경
+  const handleEditChange = (key, value) => {
+    setEditedData(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // 수정 저장
+  const handleSaveEdit = () => {
+    if (editingDocument && editingDocument._id) {
+      updateDocument(selectedCollection, editingDocument._id, editedData);
+    }
+  };
+
+  // 문서 업데이트 API
+  const updateDocument = async (collectionName, documentId, updatedData) => {
+    setEditLoading(true);
+    setEditError(null);
+    
+    try {
+      const response = await axios.put(`/api/collections/${collectionName}/data/${documentId}`, updatedData);
+      
+      if (response.data.success) {
+        // 성공 시 데이터 새로고침
+        fetchCollectionData(selectedCollection, page, rowsPerPage);
+        setEditDialog(false);
+        setEditingDocument(null);
+        setEditedData({});
+      } else {
+        throw new Error(response.data.message || 'Failed to update document');
+      }
+    } catch (err) {
+      console.error('Error updating document:', err);
+      setEditError(err.response?.data?.message || err.message || '문서 업데이트 중 오류가 발생했습니다.');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   // 컴포넌트 마운트 시 데이터 조회
@@ -411,9 +470,19 @@ const MongoDBViewer = () => {
                       <React.Fragment key={index}>
                         <TableRow sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
                           <TableCell colSpan={2}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                              Document #{index + 1}
-                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                Document #{index + 1}
+                              </Typography>
+                              <Fab
+                                size="small"
+                                color="primary"
+                                onClick={() => handleEditDocument(item)}
+                                sx={{ ml: 2 }}
+                              >
+                                <EditIcon />
+                              </Fab>
+                            </Box>
                           </TableCell>
                         </TableRow>
                         {Object.entries(item).map(([key, value]) => (
@@ -421,14 +490,14 @@ const MongoDBViewer = () => {
                             <TableCell sx={{ 
                               fontWeight: 'medium', 
                               color: 'primary.main',
-                              verticalAlign: 'top',      // 상단 정렬
-                              wordBreak: 'break-word'    // 긴 단어 줄바꿈
+                              verticalAlign: 'top',
+                              wordBreak: 'break-word'
                             }}>
                               {key}
                             </TableCell>
                             <TableCell sx={{ 
-                              wordBreak: 'break-word',   // 긴 텍스트 줄바꿈
-                              verticalAlign: 'top'       // 상단 정렬
+                              wordBreak: 'break-word',
+                              verticalAlign: 'top'
                             }}>
                               {renderJsonValue(value, key)}
                             </TableCell>
@@ -502,6 +571,86 @@ const MongoDBViewer = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCountDialog(false)}>닫기</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 수정 다이얼로그 */}
+      <Dialog 
+        open={editDialog} 
+        onClose={() => setEditDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">
+            문서 수정 - {selectedCollection}
+          </Typography>
+          <IconButton onClick={() => setEditDialog(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          {editError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {editError}
+            </Alert>
+          )}
+          
+          {editingDocument && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Document ID: {editingDocument._id}
+              </Typography>
+              
+              <Grid container spacing={2}>
+                {Object.entries(editedData).map(([key, value]) => (
+                  <Grid item xs={12} key={key}>
+                    <TextField
+                      fullWidth
+                      label={key}
+                      value={typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
+                      onChange={(e) => {
+                        let newValue = e.target.value;
+                        if (typeof value === 'object') {
+                          try {
+                            newValue = JSON.parse(e.target.value);
+                          } catch (err) {
+                            // 파싱 실패 시 문자열로 유지
+                          }
+                        } else if (typeof value === 'number') {
+                          newValue = Number(e.target.value) || e.target.value;
+                        } else if (typeof value === 'boolean') {
+                          newValue = e.target.value === 'true';
+                        }
+                        handleEditChange(key, newValue);
+                      }}
+                      multiline={typeof value === 'object'}
+                      rows={typeof value === 'object' ? 4 : 1}
+                      disabled={key === '_id'}
+                      variant="outlined"
+                      sx={{ mb: 1 }}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      타입: {typeof value} {key === '_id' && '(수정 불가)'}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setEditDialog(false)} disabled={editLoading}>
+            취소
+          </Button>
+          <Button 
+            onClick={handleSaveEdit}
+            variant="contained"
+            startIcon={editLoading ? <CircularProgress size={16} /> : <SaveIcon />}
+            disabled={editLoading}
+          >
+            {editLoading ? '저장 중...' : '저장'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
