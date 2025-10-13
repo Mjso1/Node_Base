@@ -4,6 +4,9 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+// 라우터 모듈 import
+const mongoRoutes = require('./src/route/mongo');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -24,6 +27,9 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// MongoDB 관련 API 라우트 연결
+app.use('/api', mongoRoutes);
+
 // React 앱 서빙
 const frontendPath = path.join(__dirname, '../Node_Front/build');
 app.use(express.static(frontendPath));
@@ -38,4 +44,5 @@ app.get('*', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 Server: http://localhost:${port}`);
+  console.log('📁 Routes loaded: /api/collections');
 });
