@@ -1,14 +1,27 @@
 import React from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import MongoDBViewer from './components/MongoDBViewer';
 import './App.css';
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>React App</h1>
-        <p>초기화 완료</p>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <MongoDBViewer />
+    </ThemeProvider>
   );
 }
 
