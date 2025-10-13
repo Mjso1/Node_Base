@@ -1,72 +1,41 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
-app.use(helmet());
+// ê¸°ë³¸ ë¯¸ë“¤ì›¨ì–´
 app.use(cors());
-app.use(morgan('combined'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// MongoDB ¿¬°á
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expressapp', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+// MongoDB ì—°ê²°
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expressapp')
+  .then(() => console.log('âœ… MongoDB connected'))
+  .catch(err => console.error('âŒ MongoDB error:', err));
 
-// API Routes (API ¶ó¿ìÆ®¸¦ ¸ÕÀú Á¤ÀÇ)
-app.use('/api/users', require('./src/routes/users'));
-app.use('/api/auth', require('./src/routes/auth'));
-
-// °£´ÜÇÑ ¿¡ÄÚ API - Ãß°¡
-app.get('/api/echo', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Echo API is working',
-    timestamp: new Date().toISOString(),
-    server: 'Node.js Express Server'
+// API ë¼ìš°íŠ¸
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API ìž‘ë™ì¤‘', 
+    time: new Date().toLocaleString('ko-KR') 
   });
 });
 
-// React Á¤Àû ÆÄÀÏ ¼­ºù (Node_Front Æú´õÀÇ build ÆÄÀÏ)
+// React ì•± ì„œë¹™
 const frontendPath = path.join(__dirname, '../Node_Front/build');
 app.use(express.static(frontendPath));
 
-app.use((req, res, next) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    next();
-});
-
-// React Router¸¦ À§ÇÑ catch-all ÇÚµé·¯ (API ¶ó¿ìÆ®°¡ ¾Æ´Ñ ¸ðµç ¿äÃ»)
-app.get('/', (req, res) => {
-  // API ¿äÃ»ÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ React ¾Û ¼­ºù
-  if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'API not found' });
   } else {
-    res.status(404).json({ message: 'API route not found' });
+    res.sendFile(path.join(frontendPath, 'index.html'));
   }
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
-});
-
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-  console.log('Environment:', process.env.NODE_ENV || 'development');
-  console.log('Frontend path:', frontendPath);
+  console.log(`ðŸš€ Server: http://localhost:${port}`);
 });
-
-module.exports = app;
