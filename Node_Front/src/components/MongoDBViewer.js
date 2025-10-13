@@ -25,8 +25,10 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const MongoDBViewer = () => {
+  const navigate = useNavigate();
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -66,7 +68,7 @@ const MongoDBViewer = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: 3 }}>
-        {/* 헤더 */}
+        {/* 헤더 - 홈 버튼 추가 */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <StorageIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
@@ -81,14 +83,23 @@ const MongoDBViewer = () => {
               )}
             </Box>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
-            onClick={fetchCollections}
-            disabled={loading}
-          >
-            새로고침
-          </Button>
+          <Box>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/')}
+              sx={{ mr: 1 }}
+            >
+              홈으로
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<RefreshIcon />}
+              onClick={fetchCollections}
+              disabled={loading}
+            >
+              새로고침
+            </Button>
+          </Box>
         </Box>
 
         {/* 데이터베이스 정보 */}
