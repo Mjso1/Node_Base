@@ -20,7 +20,8 @@ import {
   TableChart as TableIcon,
   Info as InfoIcon,
   Visibility as VisibilityIcon,
-  Numbers as NumbersIcon
+  Numbers as NumbersIcon,
+  Download as DownloadIcon    // 👈 추가
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -145,6 +146,48 @@ const MongoDBViewer = () => {
     }
   };
 
+  const downloadCollectionData = async (collectionName) => {
+    try {
+      // 전체 데이터 조회 (limit 없이)
+      const response = await axios.get(`/api/collections/${collectionName}/data`, {
+        params: { limit: 99999 } // 대용량 데이터 조회
+      });
+      
+      if (response.data.success) {
+        const jsonData = response.data.data;
+        
+        // JSON 파일 생성 및 다운로드
+        const dataStr = JSON.stringify(jsonData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        // 파일명 생성 (날짜/시간 포함)
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
+        const fileName = `${collectionName}_${timestamp}.json`;
+        
+        // 다운로드 링크 생성 및 클릭
+        const downloadUrl = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // 메모리 정리
+        URL.revokeObjectURL(downloadUrl);
+        
+        console.log(`${collectionName} 데이터 다운로드 완료: ${fileName}`);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch data for download');
+      }
+    } catch (err) {
+      console.error('다운로드 오류:', err);
+      // 에러 알림 (선택사항)
+      alert(`다운로드 중 오류가 발생했습니다: ${err.message}`);
+    }
+  };
+
   // 이벤트 핸들러들
   const handleViewData = (collectionName) => {
     setSelectedCollection(collectionName);
@@ -186,6 +229,12 @@ const MongoDBViewer = () => {
     setRowsPerPage(newRowsPerPage);
     setPage(0);
     fetchCollectionData(selectedCollection, 0, newRowsPerPage);
+  };
+
+  const handleDownloadData = (collectionName) => {
+    if (window.confirm(`${collectionName} 컬렉션의 모든 데이터를 JSON 파일로 다운로드하시겠습니까?`)) {
+      downloadCollectionData(collectionName);
+    }
   };
 
   useEffect(() => {
@@ -277,21 +326,33 @@ const MongoDBViewer = () => {
                       <Chip label={collection.type} size="small" color="secondary" variant="outlined" />
                     </CardContent>
                     <Divider />
-                    <CardActions>
-                      <Button
-                        size="small"
-                        startIcon={<VisibilityIcon />}
-                        onClick={() => handleViewData(collection.name)}
-                      >
-                        데이터 보기
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<NumbersIcon />}
-                        onClick={() => handleViewCount(collection.name)}
-                      >
-                        개수 확인
-                      </Button>
+                    <CardActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <Button
+                            size="small"
+                            startIcon={<VisibilityIcon />}
+                            onClick={() => handleViewData(collection.name)}
+                            >
+                            데이터 보기
+                            </Button>
+                            <Button
+                            size="small"
+                            startIcon={<NumbersIcon />}
+                            onClick={() => handleViewCount(collection.name)}
+                            >
+                            개수 확인
+                            </Button>
+                        </Box>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => handleDownloadData(collection.name)}
+                            sx={{ minWidth: 'auto' }}
+                        >
+                            다운로드
+                        </Button>
                     </CardActions>
                   </Card>
                 </Grid>
