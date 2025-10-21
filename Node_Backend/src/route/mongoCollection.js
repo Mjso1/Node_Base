@@ -2,12 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // MongoDB 컬렉션(테이블) 리스트 조회 API
 router.get('/collections', async (req, res) => {
   try {
     // 현재 데이터베이스의 모든 컬렉션 이름 가져오기
     const collections = await mongoose.connection.db.listCollections().toArray();
-    
+    //await sleep(5000); // 2초 대기
     // 컬렉션 정보 정리
     const collectionList = collections.map(collection => ({
       name: collection.name,
