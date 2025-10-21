@@ -5,7 +5,8 @@ const path = require('path');
 require('dotenv').config();
 
 // 라우터 모듈 import
-const mongoRoutes = require('./src/route/mongo');
+const mongoRoutes = require('./src/route/mongoCollection');
+const pythonRoutes = require('./src/route/pythonRoute');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,12 +31,15 @@ app.get('/api/test', (req, res) => {
 // MongoDB 관련 API 라우트 연결
 app.use('/api', mongoRoutes);
 
+// Python 관련 API 라우트 연결
+app.use('/python', pythonRoutes); // Python 라우트를 명시적으로 추가
+
 // React 앱 서빙
 const frontendPath = path.join(__dirname, '../Node_Front/build');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/python/')) {
     res.status(404).json({ error: 'API not found' });
   } else {
     res.sendFile(path.join(frontendPath, 'index.html'));
