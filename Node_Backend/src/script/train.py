@@ -9,8 +9,8 @@ from .model import create_classification_model
 # 상수 정의
 SEQUENCE_LENGTH = 3
 # 3. 라벨이 포함된 데이터 파일 경로로 변경
-DATA_PATH = "data/time_series_data.csv" # 파일 이름이 time_series_data.csv가 맞는지 확인하세요.
-MODEL_SAVE_PATH = "models/ts_classification_model.h5"
+DATA_PATH = "../data/time_series_data.csv" # 파일 이름이 time_series_data.csv가 맞는지 확인하세요.
+MODEL_SAVE_PATH = "../models/ts_classification_model.h5"
 
 # 모델 저장 디렉터리 생성
 os.makedirs(os.path.dirname(MODEL_SAVE_PATH), exist_ok=True)

@@ -4,8 +4,8 @@ from .data_loader import load_series_data # 상대 경로로 수정
 
 # 상수 정의
 SEQUENCE_LENGTH = 3
-DATA_PATH = "data/time_series_data.tt"
-MODEL_PATH = "models/ts_model.h5"
+DATA_PATH = "../data/time_series_data.tt"
+MODEL_PATH = "../models/ts_model.h5"
 
 def make_predictions(model, new_data):
     """
