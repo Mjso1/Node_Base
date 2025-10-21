@@ -48,5 +48,5 @@ app.get('*', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 Server: http://localhost:${port}`);
-  console.log('📁 Routes loaded: /api/collections');
+  console.log('📁 Routes loaded: /api/collections, /python');
 });

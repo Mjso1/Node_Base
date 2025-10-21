@@ -5,6 +5,7 @@ yarn-error.log
 .vscode/
 .idea/
 models/
+data/
 dist/
 coverage/
 *.log
