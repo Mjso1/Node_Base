@@ -4,8 +4,8 @@ npm-debug.log
 yarn-error.log
 .vscode/
 .idea/
-models/
-data/
+src/models/
+src/data/
 dist/
 coverage/
 *.log

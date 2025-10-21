@@ -85,4 +85,44 @@ router.get('/runModelLstm/:modelName', (req, res) => {
   });
 });
 
+// 3. python 실행 엔드포인트
+router.get('/:file', (req, res) => {
+  const inputStr = req.params.str; // URL에서 입력받은 문자열
+
+  // Python 스크립트 실행
+  const pythonProcess = spawn('python', ['script/test.py', inputStr]);
+
+  let output = '';
+  let errorOutput = '';
+
+  // Python 스크립트의 표준 출력 처리
+  pythonProcess.stdout.on('data', (data) => {
+    output += data.toString();
+  });
+
+  // Python 스크립트의 표준 에러 처리
+  pythonProcess.stderr.on('data', (data) => {
+    errorOutput += data.toString();
+  });
+
+  // Python 스크립트 실행 완료 처리
+  pythonProcess.on('close', (code) => {
+    if (code === 0) {
+      res.json({
+        success: true,
+        message: 'Python 테스트 스크립트 실행 성공',
+        input: inputStr,
+        output: output.trim(),
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Python 테스트 스크립트 실행 중 오류 발생',
+        input: inputStr,
+        error: errorOutput.trim(),
+      });
+    }
+  });
+});
+
 module.exports = router;
