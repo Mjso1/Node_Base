@@ -1,12 +1,13 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import numpy as np
 import json
 from tensorflow.keras.models import load_model
 from data_loader import load_series_data_with_labels
 import re
 
-# TensorFlow 로그 레벨 설정
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 # 상수 정의
 SEQUENCE_LENGTH = 3

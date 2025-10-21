@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const { spawn } = require('child_process');
 const path = require('path');
 const router = express.Router();
@@ -49,7 +50,7 @@ router.get('/test/:str', (req, res) => {
 });
 
 // 2. python 실행 엔드포인트
-router.get('/:file', (req, res) => {
+router.get('/run/:file', (req, res) => {
   const inputStr = req.params.file; // URL에서 입력받은 문자열
 
   // Python 스크립트 경로
@@ -91,6 +92,23 @@ router.get('/:file', (req, res) => {
       });
     }
   });
+});
+
+// 3. Flask 서버 연동 예제 엔드포인트 (GET 방식)
+router.get('/Flask', async (req, res) => {
+  try {
+    const inputData = req.query.input_data; // 쿼리 파라미터에서 입력 데이터 가져오기
+
+    // Flask 서버 호출 (GET 방식)
+    const response = await axios.get('http://localhost:5000/predict', {
+      params: { input_data: inputData }, // 쿼리 파라미터로 데이터 전달
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Flask 서버 호출 중 오류 발생' });
+  }
 });
 
 module.exports = router;
